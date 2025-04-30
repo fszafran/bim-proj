@@ -1,4 +1,5 @@
 venv/
+shared/
 # Logs
 logs
 *.log
