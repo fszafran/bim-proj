@@ -15,7 +15,7 @@ const viewer = new Viewer(cesiumDiv, {
 });
 
 viewer.camera.flyTo({
-  destination: Cartesian3.fromDegrees(21.010282, 52.2100, 400),
+  destination: Cartesian3.fromDegrees(21.010282, 52.220536, 400),
   orientation: {
     heading: CesiumMath.toRadians(0.0),
     pitch: CesiumMath.toRadians(-45.0),
@@ -27,7 +27,14 @@ submitBtn.addEventListener('click', async () => {
 
   if (!file) return;
 
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
   try {
+    const loadingScreen = document.querySelector('.loading-screen');
+    loadingScreen.style.display = 'flex';
+
+    const loadingText = document.querySelector('.loading-text');
+    
     const formData = new FormData();
     formData.append('file', file);
 
@@ -36,14 +43,12 @@ submitBtn.addEventListener('click', async () => {
         'Content-Type': 'multipart/form-data'
       }
     });
-    console.log(response);
     
     if (response.data && response.data.output_file) {
       const containerPath = response.data.output_file;
       const fileName = containerPath.split('/').pop(); 
   
       const modelUrl = `/shared/output/${fileName}`; 
-      console.log("Attempting to load model from URL:", modelUrl);
       
       try {
         const resource = new Resource({
@@ -51,8 +56,8 @@ submitBtn.addEventListener('click', async () => {
         });
 
         const modelLongitude = 21.010282;
-        const modelLatitude = 52.2100;
-        const modelHeight = 150;
+        const modelLatitude = 52.220536;
+        const modelHeight = 155;
         const modelPosition = Cartesian3.fromDegrees(modelLongitude, modelLatitude, modelHeight);
 
         const modelMatrix = Transforms.eastNorthUpToFixedFrame(modelPosition);
@@ -63,17 +68,14 @@ submitBtn.addEventListener('click', async () => {
           scale: 1,
         });
         
-        console.log("Model created, adding to scene");
         viewer.scene.primitives.add(model);
-
-        model.readyEvent.addEventListener(() => {
-          console.log("Model ready event fired!");
-          
+        model.readyEvent.addEventListener(async () => {
           if (model.boundingSphere) {
-            console.log("Flying to model bounding sphere");
+            loadingText.textContent = 'Wykonujemy niesamowicie skomplikowane transformacje \u{1F913}';
+            await delay(4000);
             
-            console.log(model.boundingSphere.center);
-            console.log(model.boundingSphere.radius);
+            loadingText.textContent = 'Już prawie gotowe \u{1F4AB}';
+            await delay(2500);
             
             viewer.camera.flyToBoundingSphere(model.boundingSphere, {
               duration: 2.0, 
@@ -82,6 +84,9 @@ submitBtn.addEventListener('click', async () => {
                 console.log("Camera positioning complete using flyToBoundingSphere");
               }
             });
+            await delay(2000);
+            loadingScreen.style.display = 'none';
+
           } else {
             console.warn("Model ready but has no bounding sphere");
           }
