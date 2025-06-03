@@ -14,17 +14,23 @@ async def hello():
 async def upload_input_dir(request: Request):
     data = await request.json()
 
+    print("Received data:", data)
+
     ifc_filepath = data.get("filepath")
     if not ifc_filepath:
         return {"error": "No filepath provided"}
     
+    print("Converting IFC file:", ifc_filepath)
+
     ifc_filename = os.path.basename(ifc_filepath)
     base_name = os.path.splitext(ifc_filename)[0]
     output_filename = f"{base_name}.glb"
 
     output_filepath = os.path.join(OUTPUT_DIR, output_filename)
+    print("Output file will be saved as:", output_filepath)
 
     try:
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
         result = subprocess.run(
             ["IfcConvert", ifc_filepath, output_filepath], 
             capture_output=True, 

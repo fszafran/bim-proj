@@ -18,19 +18,21 @@ app.add_middleware(
 @app.post("/file")
 async def post_file(file: UploadFile = File(...)):
     filename = file.filename
+    print(f"Received file: {filename}")
     contents = await file.read()
 
     filepath = os.path.join(INPUT_DIR, filename)
+    print(f"Saving file to: {filepath}")
     with open(filepath, "wb") as f:
         f.write(contents)
-    
+    print(f"File saved successfully: {filepath}")
     payload = {"filepath": filepath}
+    print(f"Sending payload to converter service: {payload}")
     try:
         response = requests.post(f"{CONVERTER_URL}/input_dir", json=payload)
         response.raise_for_status()
     except requests.RequestException as e:
         return {"message": f"File saved, but converter service error: {str(e)}", 
-                "filepath": filepath}
-
-    return {"message": f"Successfully saved {filename} to {filepath}"}
+                "file": ""}
+    return {"output_file": response.json().get("output_file", "")}
     
