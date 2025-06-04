@@ -9,7 +9,7 @@ const fileInput = document.querySelector('#fileInput');
 
 const postAddress = import.meta.env.VITE_UPLOAD_ADDRESS;
 
-Ion.defaultAccessToken = import.meta.env.CESIUM_API_KEY;
+Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_API_KEY;
 
 const viewer = new Viewer(cesiumDiv, {
   terrain: Terrain.fromWorldTerrain(),
